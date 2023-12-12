@@ -78,8 +78,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       backgroundColor: Colors.blue,
                     ),
                   );
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => LoginPage()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()));
                 }
               },
               builder: (context, state) {

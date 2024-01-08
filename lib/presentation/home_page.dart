@@ -17,6 +17,8 @@ class _HomePageState extends State<HomePage> {
   TextEditingController? titleController;
   TextEditingController? priceController;
   TextEditingController? descriptionController;
+  final scrollController = ScrollController();
+
   @override
   void initState() {
     titleController = TextEditingController();
@@ -24,6 +26,12 @@ class _HomePageState extends State<HomePage> {
     descriptionController = TextEditingController();
     super.initState();
     context.read<ProductsBloc>().add(GetProductsEvent());
+    scrollController.addListener(() {
+      if (scrollController.position.maxScrollExtent ==
+          scrollController.offset) {
+        context.read<ProductsBloc>().add(NextProductsEvent());
+      }
+    });
   }
 
   @override
@@ -62,11 +70,21 @@ class _HomePageState extends State<HomePage> {
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) {
           if (state is ProductsLoaded) {
+            debugPrint('totaldata : ${state.data.length}');
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ListView.builder(
-                itemCount: state.data.length,
+                controller: scrollController,
+                itemCount:
+                    state.isNext ? state.data.length + 1 : state.data.length,
                 itemBuilder: (context, index) {
+                  if (state.isNext && index == state.data.length) {
+                    return const Card(
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
                   return Card(
                     child: ListTile(
                       title:
@@ -105,7 +123,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                     TextField(
                       controller: descriptionController,
-                      decoration: const InputDecoration(labelText: 'Description'),
+                      decoration:
+                          const InputDecoration(labelText: 'Description'),
                       maxLines: 3,
                     )
                   ],
@@ -124,7 +143,8 @@ class _HomePageState extends State<HomePage> {
                     listener: (context, state) {
                       if (state is AddProductLoaded) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Add Product Success')));
+                            const SnackBar(
+                                content: Text('Add Product Success')));
                         context.read<ProductsBloc>().add(GetProductsEvent());
                         titleController!.clear();
                         priceController!.clear();
